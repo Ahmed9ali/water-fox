@@ -451,6 +451,15 @@
             android:screenOrientation="portrait"
             android:parentActivityName="com.duckduckgo.app.settings.SettingsActivity"
             tools:ignore="LockedOrientationActivity" />
+            <activity
+            android:name="com.duckduckgo.app.automation.AutomationActivity"
+            android:exported="true"
+            android:label="@string/automation_title">
+            <intent-filter>
+                <action android:name="com.duckduckgo.app.action.OPEN_AUTOMATION" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            </activity>
         <activity
             android:name="com.duckduckgo.app.settings.FireAnimationActivity"
             android:exported="false"

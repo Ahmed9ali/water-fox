@@ -18,6 +18,7 @@ package com.duckduckgo.browser.ui.browsermenu
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
@@ -96,6 +97,14 @@ class BrowserMenuBottomSheet(
         setOnCancelListener {
             performDismiss()
         }
+
+        automationMenuItem.setOnClickListener {
+            val intent = Intent(ACTION_AUTOMATION).apply {
+                setPackage(context.packageName)
+            }
+            context.startActivity(intent)
+            dismiss()
+        }
     }
 
     private val menuItemsContainer: LinearLayout
@@ -154,6 +163,9 @@ class BrowserMenuBottomSheet(
 
     val downloadsMenuItem: MenuItemView
         get() = binding.downloadsMenuItem
+
+    val automationMenuItem: MenuItemView
+        get() = binding.automationMenuItem
 
     val duckAiNewChatMenuItem: MenuItemView
         get() = duckAiSectionBinding.duckAiNewChatMenuItem
@@ -271,6 +283,7 @@ class BrowserMenuBottomSheet(
         refreshActionMenuItem.isVisible = false
         bookmarksMenuItem.isVisible = true
         downloadsMenuItem.isVisible = true
+        automationMenuItem.isVisible = true
     }
 
     private fun renderBrowserMenu(viewState: BrowserMenuViewState.Browser) {
@@ -615,5 +628,6 @@ class BrowserMenuBottomSheet(
 
     companion object {
         internal const val PEEK_HEIGHT_PERCENT = 90
+        const val ACTION_AUTOMATION = "com.duckduckgo.app.action.OPEN_AUTOMATION"
     }
 }
