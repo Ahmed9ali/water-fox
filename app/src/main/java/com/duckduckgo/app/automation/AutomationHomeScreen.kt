@@ -1,16 +1,24 @@
 /*
  * Copyright (c) 2025 DuckDuckGo
- * ... (license header) ...
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package com.duckduckgo.app.automation
 
-import com.duckduckgo.app.browser.R
-import com.duckduckgo.mobile.android.R.drawable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,7 +46,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.duckduckgo.app.browser.R
 import com.duckduckgo.common.ui.compose.theme.DuckDuckGoTheme
+import com.duckduckgo.mobile.android.R.drawable
 
 @Composable
 fun AutomationHomeScreen(
@@ -55,30 +66,14 @@ fun AutomationHomeScreen(
     ) {
         AutomationTopBar(
             title = stringResource(R.string.automation_home_title),
-            subtitle = stringResource(R.string.automation_home_subtitle),
             onBack = onBack,
         )
 
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+            // Top margin on the hero card
+            Spacer(Modifier.height(16.dp))
+
             HeroCard(onAddDataClick = onAddDataClick)
-
-            Spacer(Modifier.height(12.dp))
-
-            InfoRowCard(
-                iconRes = drawable.ic_bookmarks_24,
-                title = stringResource(R.string.automation_my_data),
-                subtitle = stringResource(R.string.automation_data_sets_count, VaultRepository.groups.value.size),
-                onClick = onMyDataClick,
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            InfoRowCard(
-                iconRes = drawable.ic_reload_24,
-                title = stringResource(R.string.automation_status),
-                subtitle = stringResource(R.string.automation_status_not_running),
-                onClick = onCreateAutomationClick,
-            )
 
             Spacer(Modifier.height(24.dp))
 
@@ -97,9 +92,9 @@ fun AutomationHomeScreen(
             ) {
                 QuickActionButton(
                     modifier = Modifier.weight(1f),
-                    iconRes = drawable.ic_add_24,
-                    label = stringResource(R.string.automation_create_automation),
-                    onClick = onCreateAutomationClick,
+                    iconRes = drawable.ic_bookmarks_24,
+                    label = stringResource(R.string.automation_my_data),
+                    onClick = onMyDataClick,
                 )
                 QuickActionButton(
                     modifier = Modifier.weight(1f),
@@ -150,51 +145,14 @@ private fun HeroCard(onAddDataClick: () -> Unit) {
             Icon(
                 painter = painterResource(drawable.ic_add_24),
                 contentDescription = null,
+                tint = Color.White,
                 modifier = Modifier.size(20.dp),
             )
             Spacer(Modifier.width(8.dp))
-            Text(text = stringResource(R.string.automation_add_data))
-        }
-    }
-}
-
-@Composable
-private fun InfoRowCard(
-    iconRes: Int,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                color = DuckDuckGoTheme.colors.backgrounds.surface,
-                shape = RoundedCornerShape(12.dp),
-            )
-            .clickable(onClick = onClick)
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            painter = painterResource(iconRes),
-            contentDescription = null,
-            tint = DuckDuckGoTheme.colors.icons.primary,
-            modifier = Modifier.size(24.dp),
-        )
-        Spacer(Modifier.width(16.dp))
-        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = title,
-                color = DuckDuckGoTheme.colors.text.primary,
-                fontSize = 16.sp,
+                text = stringResource(R.string.automation_add_data),
+                color = Color.White,
                 fontWeight = FontWeight.Medium,
-            )
-            Spacer(Modifier.height(2.dp))
-            Text(
-                text = subtitle,
-                color = DuckDuckGoTheme.colors.text.secondary,
-                fontSize = 14.sp,
             )
         }
     }
@@ -239,6 +197,7 @@ fun AutomationTopBar(title: String, subtitle: String? = null, onBack: () -> Unit
         modifier = Modifier
             .fillMaxWidth()
             .background(DuckDuckGoTheme.colors.backgrounds.surface)
+            .statusBarsPadding()
             .padding(horizontal = 8.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

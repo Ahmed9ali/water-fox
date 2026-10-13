@@ -454,7 +454,8 @@
             <activity
             android:name="com.duckduckgo.app.automation.AutomationActivity"
             android:exported="true"
-            android:label="@string/automation_title">
+            android:label="@string/automation_title"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="com.duckduckgo.app.action.OPEN_AUTOMATION" />
                 <category android:name="android.intent.category.DEFAULT" />

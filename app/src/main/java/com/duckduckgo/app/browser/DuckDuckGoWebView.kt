@@ -16,6 +16,8 @@
 
 package com.duckduckgo.app.browser
 
+import com.duckduckgo.app.automation.AutomationEngine
+import com.duckduckgo.app.automation.AutomationBridge
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Message
@@ -97,12 +99,17 @@ class DuckDuckGoWebView :
     lateinit var duckAiTextSelectionDecorator: DuckAiTextSelectionDecorator
 
     constructor(context: Context) : this(context, null)
-    constructor(
-        context: Context,
-        attrs: AttributeSet?,
-    ) : super(context, attrs) {
-        isNestedScrollingEnabled = true
+constructor(
+    context: Context,
+    attrs: AttributeSet?,
+) : super(context, attrs) {
+    isNestedScrollingEnabled = true
+    try {
+        addJavascriptInterface(AutomationBridge(), "AutomationBridge")
+    } catch (e: Exception) {
+        logcat(ERROR) { "AutomationBridge: failed to add JS interface: ${e.asLog()}" }
     }
+}
 
     override fun startActionMode(callback: ActionMode.Callback?): ActionMode? =
         super.startActionMode(decorate(callback))
@@ -230,10 +237,57 @@ class DuckDuckGoWebView :
     }
 
     override fun setWebViewClient(client: WebViewClient) {
-        if (!isDestroyed) {
-            super.setWebViewClient(client)
-        }
+    if (!isDestroyed) {
+        super.setWebViewClient(
+            object : WebViewClient() {
+                override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                    client.onPageStarted(view, url, favicon)
+                }
+
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    client.onPageFinished(view, url)
+                    try {
+                        AutomationEngine.attachWebView(this@DuckDuckGoWebView)
+                        AutomationEngine.injectScanner()
+                    } catch (e: Exception) {
+                        logcat(ERROR) { "AutomationEngine: inject failed: ${e.asLog()}" }
+                    }
+                }
+
+                override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
+                    return client.shouldOverrideUrlLoading(view, request)
+                }
+
+                override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                    return client.shouldOverrideUrlLoading(view, url)
+                }
+
+                override fun onReceivedError(
+                    view: WebView?,
+                    request: android.webkit.WebResourceRequest?,
+                    error: android.webkit.WebResourceError?,
+                ) {
+                    client.onReceivedError(view, request, error)
+                }
+
+                override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
+                    client.doUpdateVisitedHistory(view, url, isReload)
+                }
+
+                override fun onLoadResource(view: WebView?, url: String?) {
+                    client.onLoadResource(view, url)
+                }
+
+                override fun shouldInterceptRequest(
+                    view: WebView?,
+                    request: android.webkit.WebResourceRequest?,
+                ): android.webkit.WebResourceResponse? {
+                    return client.shouldInterceptRequest(view, request)
+                }
+            },
+        )
     }
+}
 
     override fun setFindListener(listener: FindListener?) {
         if (!isDestroyed) {

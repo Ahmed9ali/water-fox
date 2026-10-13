@@ -1045,4 +1045,75 @@
 <string name="automation_create_new_group_desc">Start a new data set to organize your information.</string>
 <string name="automation_coming_soon">Coming soon</string>
 <string name="automation_back">Back</string>
+
+<string name="automation_paste_title">Paste Data</string>
+<string name="automation_field_name_label">Field name</string>
+<string name="automation_field_name_placeholder">e.g. Phone Number</string>
+<string name="automation_values_label">Values (one per line)</string>
+<string name="automation_values_placeholder">+91 9876543210\n+91 9876543211\n+91 9876543212</string>
+<string name="automation_values_count">%1$d values</string>
+<string name="automation_save_with_count">Save %1$d values</string>
+
+<string name="automation_delete">Delete</string>
+<string name="automation_delete_confirm">Delete this data set?</string>
+<string name="automation_cancel">Cancel</string>
+<string name="automation_imported_group">Imported</string>
+<string name="automation_no_entries">No entries yet</string>
+<string name="automation_file_load_error">Could not read file</string>
+
+<string name="automation_create_title">Create Automation</string>
+<string name="automation_create_desc">Configure how the system should use your data to fill forms.</string>
+<string name="automation_select_dataset">Select Data Set</string>
+<string name="automation_fill_mode">Fill Mode</string>
+<string name="automation_mode_in_series">In Series</string>
+<string name="automation_mode_in_series_desc">Use data in order (1, 2, 3, …).</string>
+<string name="automation_mode_random">Random</string>
+<string name="automation_mode_random_desc">Use random data from the set.</string>
+<string name="automation_target_forms">Target Forms</string>
+<string name="automation_target_signup">Sign Up Form</string>
+<string name="automation_start_automation">Start Automation</string>
+<string name="automation_no_dataset">Add a data set first</string>
+<string name="automation_running_title">Automation Running</string>
+<string name="automation_filling_form">Filling form…</string>
+<string name="automation_using_dataset">Using data from %1$s</string>
+<string name="automation_completed_count">Completed</string>
+<string name="automation_remaining_count">Remaining</string>
+<string name="automation_total_count">Total</string>
+<string name="automation_current_entry">Current Entry</string>
+<string name="automation_pause">Pause</string>
+<string name="automation_completed_title">Automation Completed!</string>
+<string name="automation_completed_desc">All forms have been filled successfully using your saved data.</string>
+<string name="automation_data_set_label">Data Set</string>
+<string name="automation_mode_label">Mode</string>
+<string name="automation_total_filled_label">Total Filled</string>
+<string name="automation_view_logs_btn">View Logs</string>
+<string name="automation_run_again">Run Again</string>
+<string name="automation_select_placeholder">Select a data set</string>
+
+<string name="automation_import_title">Import Data</string>
+<string name="automation_import_review_title">Review Found Data</string>
+<string name="automation_import_hint">Paste your .txt file here </string>
+<string name="automation_import_placeholder">John Doe\njohn@example.com\n+91 9876543210\n15/05/1990</string>
+<string name="automation_analyze">Analyze Text</string>
+<string name="automation_import_empty">No data found. Try different text.</string>
+<string name="automation_import_found">Found %1$d items. Select the ones you want to save:</string>
+<string name="automation_import_save">Save Selected</string>
+
+<string name="automation_generate_form_data">Generate Full Form Data</string>
+<string name="automation_generate_form_data_desc">Auto-create a detailed data set for signup and contact forms.</string>
+<string name="automation_generate_title">Generate Form Data</string>
+<string name="automation_generate_desc">We will create a data set with all the standard form fields. Give it a name and save.</string>
+<string name="automation_generate_name_placeholder">e.g. Signup Form</string>
+<string name="automation_generate_preview">Preview</string>
+<string name="automation_generate_save">Generate and Save</string>
+
+<string name="automation_rename">Rename</string>
+<string name="automation_rename_title">Rename group</string>
+<string name="automation_pin">Pin</string>
+<string name="automation_unpin">Unpin</string>
+<string name="automation_more_options">More options</string>
+<string name="automation_entries_count">%1$d entries</string>
+<string name="automation_group_name_label">Group name (e.g. Signups)</string>
+<string name="automation_save">Save</string>
+
 </resources>

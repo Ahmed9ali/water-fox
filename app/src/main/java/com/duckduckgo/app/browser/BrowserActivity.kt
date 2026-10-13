@@ -18,6 +18,7 @@
 
 package com.duckduckgo.app.browser
 
+import com.duckduckgo.app.automation.AutomationEngine
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -385,10 +386,12 @@ open class BrowserActivity : DuckDuckGoActivity() {
     private var setAsDefaultBrowserDialog: DefaultBrowserBottomSheetDialog? = null
 
     @SuppressLint("MissingSuperCall")
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.daggerInject()
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.daggerInject()
 
-        val savedMode = savedInstanceState?.getString(KEY_SAVED_BROWSER_MODE)
+    AutomationEngine.init(applicationContext)
+
+    val savedMode = savedInstanceState?.getString(KEY_SAVED_BROWSER_MODE)
         val modeChangedSinceSave = savedMode != null && savedMode != currentBrowserMode.name
         if (modeChangedSinceSave) {
             savedInstanceState?.remove(KEY_TAB_PAGER_STATE)
