@@ -38,6 +38,7 @@
     <string name="browserMenuDownloadPdf">Download PDF</string>
     <string name="browserMenuReportBrokenSite">Report Broken Site</string>
     <string name="browserMenuAutofill">Passwords</string>
+    <string name="browserMenuAutomation">Automation</string>
     <string name="browserMenuDownloads">Downloads</string>
     <string name="browserMenuSettings">Settings</string>
     <string name="browserMenuOpenInDDG">Open in DuckDuckGo</string>

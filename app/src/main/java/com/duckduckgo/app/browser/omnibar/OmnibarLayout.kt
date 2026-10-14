@@ -16,6 +16,9 @@
 
 package com.duckduckgo.app.browser.omnibar
 
+
+import androidx.lifecycle.Observer
+import com.duckduckgo.app.automation.AutomationEngine
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
@@ -117,6 +120,7 @@ import com.duckduckgo.common.ui.store.AppBrandDesignUpdateToggles
 import com.duckduckgo.common.ui.view.KeyboardAwareEditText
 import com.duckduckgo.common.ui.view.KeyboardAwareEditText.ShowSuggestionsListener
 import com.duckduckgo.common.ui.view.addBottomShadow
+import com.duckduckgo.common.ui.view.getColorFromAttr
 import com.duckduckgo.common.ui.view.gone
 import com.duckduckgo.common.ui.view.hide
 import com.duckduckgo.common.ui.view.show
@@ -223,6 +227,9 @@ class OmnibarLayout @JvmOverloads constructor(
 
     private var previousTransitionState: TransitionState? = null
     private var lastAppliedShowContextualSheetIcon: Boolean? = null
+    private val detectedFieldsObserver = Observer<Int> { count ->
+    aiChatMenu?.isVisible = count > 0
+}
 
     private val lifecycleOwner: LifecycleOwner by lazy {
         requireNotNull(findViewTreeLifecycleOwner())
@@ -488,17 +495,26 @@ class OmnibarLayout @JvmOverloads constructor(
             stateBuffer.clear()
         }
 
-        animatorHelper.setListener(this)
-        findInPage.findInPageContainer.viewTreeObserver.addOnGlobalLayoutListener(findInPageLayoutVisibilityChangeListener)
-    }
+                animatorHelper.setListener(this)
+    findInPage.findInPageContainer.viewTreeObserver.addOnGlobalLayoutListener(findInPageLayoutVisibilityChangeListener)
+    AutomationEngine.detectedFieldCount.observeForever(detectedFieldsObserver)
 
-    override fun onDetachedFromWindow() {
-        conflatedStateJob.cancel()
-        conflatedCommandJob.cancel()
-        focusAnimator?.cancel()
-        findInPage.findInPageContainer.viewTreeObserver.removeOnGlobalLayoutListener(findInPageLayoutVisibilityChangeListener)
-        super.onDetachedFromWindow()
+    // Force our robot icon on the address bar slot
+    (aiChatMenu as? ImageView)?.let { iv ->
+        iv.setImageResource(CommonR.drawable.ic_automation_24)
+        iv.setColorFilter(context.getColorFromAttr(com.duckduckgo.mobile.android.R.attr.daxColorPrimaryIcon))
+        iv.contentDescription = "Automation"
     }
+}
+
+   override fun onDetachedFromWindow() {
+    conflatedStateJob.cancel()
+    conflatedCommandJob.cancel()
+    focusAnimator?.cancel()
+    findInPage.findInPageContainer.viewTreeObserver.removeOnGlobalLayoutListener(findInPageLayoutVisibilityChangeListener)
+    AutomationEngine.detectedFieldCount.removeObserver(detectedFieldsObserver)
+    super.onDetachedFromWindow()
+}
 
     @SuppressLint("ClickableViewAccessibility")
     override fun setOmnibarTextListener(textListener: TextListener) {
@@ -612,10 +628,9 @@ class OmnibarLayout @JvmOverloads constructor(
         browserMenu.setOnClickListener {
             omnibarItemPressedListener?.onBrowserMenuPressed()
         }
-        aiChatMenu?.setOnClickListener {
-            viewModel.onDuckChatButtonPressed()
-            omnibarItemPressedListener?.onDuckChatButtonPressed(it)
-        }
+       aiChatMenu?.setOnClickListener {
+    AutomationEngine.fillCurrentPage()
+}
         shieldIcon.setOnClickListener {
             if (isAttachedToWindow) {
                 viewModel.onPrivacyShieldButtonPressed()
@@ -947,10 +962,9 @@ class OmnibarLayout @JvmOverloads constructor(
             isDuckAiMode = newTransitionState.isDuckAiMode,
             isNativeChatInputEnabled = newTransitionState.isNativeChatInputEnabled,
         )
-        browserMenu.isVisible = newTransitionState.showBrowserMenu
-        browserMenuHighlight.isVisible = newTransitionState.showBrowserMenuHighlight
-        aiChatMenu?.isVisible = newTransitionState.showChatMenu
-        applyAiChatMenuStyling(viewState.showContextualSheetIcon)
+       // Icon visibility is driven by AutomationEngine.detectedFieldCount observer
+browserMenuHighlight.isVisible = newTransitionState.showBrowserMenuHighlight
+applyAiChatMenuStyling(viewState.showContextualSheetIcon)
         aiChatDivider.isVisible = (viewState.showVoiceSearch || viewState.showClearButton) && viewState.showChatMenu
         duckAISidebar.isVisible = newTransitionState.showDuckSidebar
         duckAIBack.isVisible = newTransitionState.showDuckBack
@@ -1729,7 +1743,7 @@ class OmnibarLayout @JvmOverloads constructor(
         // setImageResource, and updateLayoutParams.
         if (lastAppliedShowContextualSheetIcon == showContextualSheetIcon) return
         lastAppliedShowContextualSheetIcon = showContextualSheetIcon
-        (aiChatMenu as? android.widget.ImageView)?.applyDuckAiIconStyling(showContextualSheetIcon)
+        // (aiChatMenu as? android.widget.ImageView)?.applyDuckAiIconStyling(showContextualSheetIcon)
     }
 
     override fun setNativeInputLaunchListener(listener: NativeInputLaunchListener) {

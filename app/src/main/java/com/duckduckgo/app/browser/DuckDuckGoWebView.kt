@@ -44,6 +44,8 @@ import androidx.webkit.ScriptHandler
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewCompat.WebMessageListener
 import com.duckduckgo.anvil.annotations.InjectWith
+import com.duckduckgo.app.automation.AutomationBridge
+import com.duckduckgo.app.automation.AutomationEngine
 import com.duckduckgo.app.browser.navigation.safeCopyBackForwardList
 import com.duckduckgo.app.browser.uilock.BrowserUiLockFeature
 import com.duckduckgo.common.utils.DispatcherProvider
@@ -68,7 +70,7 @@ import javax.inject.Inject
 class DuckDuckGoWebView :
     WebView,
     NestedScrollingChild3 {
-    private var lastClampedTopY: Boolean = true // when created we are always at the top
+    private var lastClampedTopY: Boolean = true
     private var contentAllowsSwipeToRefresh: Boolean = true
     private var enableSwipeRefreshCallback: ((Boolean) -> Unit)? = null
     private var hasGestureFinished = true
@@ -102,6 +104,11 @@ class DuckDuckGoWebView :
         attrs: AttributeSet?,
     ) : super(context, attrs) {
         isNestedScrollingEnabled = true
+        try {
+            addJavascriptInterface(AutomationBridge(), "AutomationBridge")
+        } catch (e: Exception) {
+            logcat(ERROR) { "AutomationBridge: failed to add JS interface: ${e.asLog()}" }
+        }
     }
 
     override fun startActionMode(callback: ActionMode.Callback?): ActionMode? =
@@ -124,8 +131,6 @@ class DuckDuckGoWebView :
         return super.onApplyWindowInsets(adjustedInsets)
     }
 
-    // Zero any IME inset passed to the WebView to avoid double-padding if the IME padding is handled by the surrounding layout.
-    // Reference https://developer.android.com/develop/ui/views/layout/webapps/understand-window-insets
     private fun stripImeInsets(insets: WindowInsets): WindowInsets {
         val windowInsetsCompat = WindowInsetsCompat.toWindowInsetsCompat(insets, this)
 
@@ -231,7 +236,63 @@ class DuckDuckGoWebView :
 
     override fun setWebViewClient(client: WebViewClient) {
         if (!isDestroyed) {
-            super.setWebViewClient(client)
+            super.setWebViewClient(
+                object : WebViewClient() {
+                    override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
+                        client.onPageStarted(view, url, favicon)
+                        // Re-register the JS bridge on every page load. Safe to call repeatedly.
+                        try {
+                            this@DuckDuckGoWebView.addJavascriptInterface(
+                                AutomationBridge(),
+                                "AutomationBridge",
+                            )
+                        } catch (e: Exception) {
+                            logcat(ERROR) { "AutomationBridge: re-register failed: ${e.asLog()}" }
+                        }
+                    }
+
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        client.onPageFinished(view, url)
+                        try {
+                            AutomationEngine.attachWebView(this@DuckDuckGoWebView)
+                            AutomationEngine.injectScanner()
+                        } catch (e: Exception) {
+                            logcat(ERROR) { "AutomationEngine: inject failed: ${e.asLog()}" }
+                        }
+                    }
+
+                    override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest?): Boolean {
+                        return client.shouldOverrideUrlLoading(view, request)
+                    }
+
+                    override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                        return client.shouldOverrideUrlLoading(view, url)
+                    }
+
+                    override fun onReceivedError(
+                        view: WebView?,
+                        request: android.webkit.WebResourceRequest?,
+                        error: android.webkit.WebResourceError?,
+                    ) {
+                        client.onReceivedError(view, request, error)
+                    }
+
+                    override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
+                        client.doUpdateVisitedHistory(view, url, isReload)
+                    }
+
+                    override fun onLoadResource(view: WebView?, url: String?) {
+                        client.onLoadResource(view, url)
+                    }
+
+                    override fun shouldInterceptRequest(
+                        view: WebView?,
+                        request: android.webkit.WebResourceRequest?,
+                    ): android.webkit.WebResourceResponse? {
+                        return client.shouldInterceptRequest(view, request)
+                    }
+                },
+            )
         }
     }
 
@@ -286,11 +347,6 @@ class DuckDuckGoWebView :
         helper.setBottomMatchingBehaviourEnabled(value)
     }
 
-    /**
-     * Enable when the surrounding layout already resizes for the keyboard, so IME insets are
-     * zeroed out before reaching the WebView and it does not additionally shrink its visual
-     * viewport for them.
-     */
     fun setStripImeInsetsEnabled(value: Boolean) {
         stripImeInsetsEnabled = value
     }
@@ -353,7 +409,6 @@ class DuckDuckGoWebView :
 
             MotionEvent.ACTION_DOWN -> {
                 hasGestureFinished = false
-                // disable swipeRefresh until we can be sure it should be enabled
                 enableSwipeRefresh(false)
 
                 returnValue = super.onTouchEvent(event)
@@ -456,15 +511,14 @@ class DuckDuckGoWebView :
         clampedX: Boolean,
         clampedY: Boolean,
     ) {
-        // taking into account lastDeltaY since we are only interested whether we clamped at the top
         lastClampedTopY = clampedY && lastDeltaY <= 0
 
         if (!lastClampedTopY) {
-            canSwipeToRefresh = false // disable because user scrolled down so we need a new gesture
+            canSwipeToRefresh = false
         }
 
         if (lastClampedTopY && hasGestureFinished) {
-            canSwipeToRefresh = true // only enable if at the top and gestured finished
+            canSwipeToRefresh = true
         }
 
         enableSwipeRefresh(canSwipeToRefresh && clampedY && scrollY == 0 && (lastDeltaY <= 0 || nestedOffsetY == 0))
@@ -587,10 +641,6 @@ class DuckDuckGoWebView :
     }
 
     companion object {
-        /*
-         * Taken from EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING
-         * We can't use that value directly as it was only added on Oreo, but we can apply the value anyway.
-         */
         private const val IME_FLAG_NO_PERSONALIZED_LEARNING = 0x1000000
     }
 }

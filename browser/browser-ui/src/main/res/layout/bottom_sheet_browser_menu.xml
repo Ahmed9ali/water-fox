@@ -252,6 +252,14 @@
                 app:menuSize="medium"
                 app:primaryText="@string/browserMenuDownloads" />
 
+            <com.duckduckgo.common.ui.view.MenuItemView
+                android:id="@+id/automationMenuItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:iconDrawable="@drawable/ic_automation_24"
+                app:menuSize="medium"
+                app:primaryText="@string/browserMenuAutomation" />    
+
             <com.duckduckgo.common.ui.view.divider.HorizontalDivider
                 android:id="@+id/privacyToolsSectionDivider"
                 android:layout_width="match_parent"

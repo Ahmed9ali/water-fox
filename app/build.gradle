@@ -152,22 +152,15 @@ android {
             ]
         }
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            manifestPlaceholders = [
-                    appIcon     : "@mipmap/ic_launcher_red",
-                    appIconRound: "@mipmap/ic_launcher_red_round"
-            ]
-
-            if (project.hasProperty('useUploadSigning')) {
-                signingConfig = signingConfigs.upload
-            } else if (isValidSigningConfig(signingConfigs.release)) {
-                signingConfig = signingConfigs.release
-            } else {
-                println "Signing properties not found, release artifacts will not be signed."
-                signingConfig = null
-            }
-        }
+    minifyEnabled false
+    shrinkResources false
+    proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+    manifestPlaceholders = [
+            appIcon     : "@mipmap/ic_launcher_red",
+            appIconRound: "@mipmap/ic_launcher_red_round"
+    ]
+    signingConfig = signingConfigs.debug
+}
     }
     flavorDimensions "store"
     productFlavors {
@@ -228,6 +221,17 @@ android {
         jniLibs {
             // this is required so the handler exists as a real file on disk
             useLegacyPackaging = true
+        }
+    }
+
+    // Build only the arm64-v8a native library to reduce APK size.
+    // Remove this block if you need a universal APK that runs on all devices.
+    splits {
+        abi {
+            enable = true
+            reset()
+            include("arm64-v8a")
+            universalApk = false
         }
     }
 }
