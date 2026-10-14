@@ -86,15 +86,19 @@ object AutomationEngine {
         }
     }
 
-    fun onFieldsDetected(json: String) {
-        Log.d("AUTOMATION", "onFieldsDetected called: $json")
-        Handler(Looper.getMainLooper()).post {
-            appContext?.let {
-                Toast.makeText(it, "Bridge called: ${json.take(100)}", Toast.LENGTH_LONG).show()
-            }
+ fun onFieldsDetected(json: String) {
+    Log.d("AUTOMATION", "onFieldsDetected called: $json")
+    Handler(Looper.getMainLooper()).post {
+        appContext?.let {
+            Toast.makeText(it, "Bridge: ${json.take(80)}", Toast.LENGTH_LONG).show()
         }
-        try {
-            val arr = JSONArray(json)
+    }
+    try {
+        // Debug-only payload — don't try to parse as field list
+        if (json.contains("\"debug\"")) return
+
+        val arr = JSONArray(json)
+        // ... rest unchanged
             lastDetectedFields = (0 until arr.length()).map {
                 val obj = arr.getJSONObject(it)
                 DetectedField(
