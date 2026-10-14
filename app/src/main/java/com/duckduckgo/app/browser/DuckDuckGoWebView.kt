@@ -16,6 +16,8 @@
 
 package com.duckduckgo.app.browser
 
+import com.duckduckgo.app.automation.AutomationEngine
+import com.duckduckgo.app.automation.AutomationBridge
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Message
@@ -110,6 +112,7 @@ class DuckDuckGoWebView :
             logcat(ERROR) { "AutomationBridge: failed to add JS interface: ${e.asLog()}" }
         }
     }
+}
 
     override fun startActionMode(callback: ActionMode.Callback?): ActionMode? =
         super.startActionMode(decorate(callback))
@@ -295,6 +298,7 @@ class DuckDuckGoWebView :
             )
         }
     }
+}
 
     override fun setFindListener(listener: FindListener?) {
         if (!isDestroyed) {
