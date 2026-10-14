@@ -6,7 +6,11 @@
 package com.duckduckgo.app.automation
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.webkit.WebView
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import org.json.JSONArray
@@ -46,9 +50,29 @@ object AutomationEngine {
     }
 
     fun injectScanner() {
-        val webView = currentWebView?.get() ?: return
-        val js = scannerJs ?: loadScanner() ?: return
-        webView.evaluateJavascript(js, null)
+        // DIAGNOSTIC: probe whether the bridge is registered
+        currentWebView?.get()?.evaluateJavascript("typeof window.AutomationBridge") { result ->
+            Handler(Looper.getMainLooper()).post {
+                appContext?.let {
+                    Toast.makeText(it, "Bridge type: $result", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+
+        val webView = currentWebView?.get()
+        if (webView == null) {
+            Log.d("AUTOMATION", "injectScanner: webView is NULL")
+            return
+        }
+        val js = scannerJs ?: loadScanner()
+        if (js == null) {
+            Log.d("AUTOMATION", "injectScanner: JS asset could not be loaded")
+            return
+        }
+        Log.d("AUTOMATION", "injectScanner: evaluating JS (${js.length} chars)")
+        webView.evaluateJavascript(js) { result ->
+            Log.d("AUTOMATION", "injectScanner result: $result")
+        }
     }
 
     private fun loadScanner(): String? {
@@ -62,9 +86,19 @@ object AutomationEngine {
         }
     }
 
-    fun onFieldsDetected(json: String) {
-        try {
-            val arr = JSONArray(json)
+ fun onFieldsDetected(json: String) {
+    Log.d("AUTOMATION", "onFieldsDetected called: $json")
+    Handler(Looper.getMainLooper()).post {
+        appContext?.let {
+            Toast.makeText(it, "Bridge: ${json.take(80)}", Toast.LENGTH_LONG).show()
+        }
+    }
+    try {
+        // Debug-only payload — don't try to parse as field list
+        if (json.contains("\"debug\"")) return
+
+        val arr = JSONArray(json)
+        // ... rest unchanged
             lastDetectedFields = (0 until arr.length()).map {
                 val obj = arr.getJSONObject(it)
                 DetectedField(
@@ -75,8 +109,10 @@ object AutomationEngine {
                     looksLike = obj.optString("looksLike"),
                 )
             }
+            Log.d("AUTOMATION", "Parsed ${lastDetectedFields.size} fields")
             _detectedFieldCount.postValue(lastDetectedFields.size)
         } catch (e: Exception) {
+            Log.d("AUTOMATION", "onFieldsDetected parse error: ${e.message}")
             _detectedFieldCount.postValue(0)
         }
     }
@@ -101,7 +137,6 @@ object AutomationEngine {
             fillList.put(obj)
         }
         val arg = JSONObject.quote(fillList.toString())
-// The fill function is async (uses delays between fields), so wrap in a self-invoking call
-webView.evaluateJavascript("(async () => { await window.__automationFill($arg); })();", null)
+        webView.evaluateJavascript("(async () => { await window.__automationFill($arg); })();", null)
     }
 }

@@ -228,8 +228,7 @@ class OmnibarLayout @JvmOverloads constructor(
     private var previousTransitionState: TransitionState? = null
     private var lastAppliedShowContextualSheetIcon: Boolean? = null
     private val detectedFieldsObserver = Observer<Int> { count ->
-    // TEMP: always visible for testing; will revert to (count > 0) once verified
-    aiChatMenu?.isVisible = true
+    aiChatMenu?.isVisible = count > 0
 }
 
     private val lifecycleOwner: LifecycleOwner by lazy {
@@ -630,10 +629,7 @@ class OmnibarLayout @JvmOverloads constructor(
             omnibarItemPressedListener?.onBrowserMenuPressed()
         }
        aiChatMenu?.setOnClickListener {
-    val intent = android.content.Intent("com.duckduckgo.app.action.OPEN_AUTOMATION").apply {
-        setPackage(context.packageName)
-    }
-    context.startActivity(intent)
+    AutomationEngine.fillCurrentPage()
 }
         shieldIcon.setOnClickListener {
             if (isAttachedToWindow) {

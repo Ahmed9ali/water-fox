@@ -404,7 +404,7 @@
                                     android:contentDescription="@string/browserPopupMenu"
                                     android:scaleType="center"
                                     android:src="@drawable/ic_automation_24"
-                                    android:visibility="gone"
+                                    android:visibility="visible"
                                     app:layout_constraintBottom_toBottomOf="parent"
                                     app:layout_constraintEnd_toEndOf="parent"
                                     app:layout_constraintTop_toTopOf="parent"
